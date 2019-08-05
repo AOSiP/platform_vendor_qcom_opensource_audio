@@ -2224,6 +2224,8 @@ status_t AudioPolicyManagerCustom::startInput(audio_io_handle_t input,
     // Routing?
     mInputRoutes.incRouteActivity(session);
 
+    sp<AudioPolicyMix> policyMix = mPolicyMix.promote();
+
     if (audioSession->activeCount() == 1 || mInputRoutes.getAndClearRouteChanged(session)) {
         // indicate active capture to sound trigger service if starting capture from a mic on
         // primary HW module
@@ -2239,8 +2241,8 @@ status_t AudioPolicyManagerCustom::startInput(audio_io_handle_t input,
         if (inputDesc->getAudioSessionCount(true/*activeOnly*/) == 1) {
             // if input maps to a dynamic policy with an activity listener, notify of state change
             if ((inputDesc->mPolicyMix != NULL)
-                    && ((inputDesc->mPolicyMix->mCbFlags & AudioMix::kCbFlagNotifyActivity) != 0)) {
-                mpClientInterface->onDynamicPolicyMixStateUpdate(inputDesc->mPolicyMix->mDeviceAddress,
+                    && ((inputDesc->PolicyMix->mCbFlags & AudioMix::kCbFlagNotifyActivity) != 0)) {
+                mpClientInterface->onDynamicPolicyMixStateUpdate(inputDesc->policyMix->mDeviceAddress,
                         MIX_STATE_MIXING);
             }
 
@@ -2261,8 +2263,8 @@ status_t AudioPolicyManagerCustom::startInput(audio_io_handle_t input,
                 String8 address = String8("");
                 if (inputDesc->mPolicyMix == NULL) {
                     address = String8("0");
-                } else if (inputDesc->mPolicyMix->mMixType == MIX_TYPE_PLAYERS) {
-                    address = inputDesc->mPolicyMix->mDeviceAddress;
+                } else if (inputDesc->policyMix->mMixType == MIX_TYPE_PLAYERS) {
+                    address = inputDesc->policyMix->mDeviceAddress;
                 }
                 if (address != "") {
                     setDeviceConnectionStateInt(AUDIO_DEVICE_OUT_REMOTE_SUBMIX,
